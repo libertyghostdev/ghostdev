@@ -1,0 +1,101 @@
+{
+  "description": "GhostDev : contexte de démarrage et mise à jour, rappel de phase, garde-fou avant chaque geste (bloque ce qui détruit, autorise le reste quand la personne a donné la main, et le diagnostic du SOS envoyé avant la fin du tour). V2 : guide consulté à chaque message, la stratégie lue avant le premier geste qui change quelque chose, la mémoire du projet après guide, la fiche d'un geste connu, les étapes d'après rappelées une fois, le compteur de blocage.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {"type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/demarrage.sh\"", "timeout": 40},
+          {"type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/socle.sh\"", "timeout": 10}
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {"type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/phase.sh\"", "timeout": 5}
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {"type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/consultation.sh\"", "timeout": 5}
+        ]
+      },
+      {
+        "matcher": "Bash|Edit|Write|MultiEdit|NotebookEdit|Read|Glob|Grep|WebFetch|WebSearch",
+        "hooks": [
+          {"type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/garde-fou.sh\"", "timeout": 5}
+        ]
+      },
+      {
+        "matcher": "Bash|Edit|Write|MultiEdit",
+        "hooks": [
+          {"type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/fiches.sh\"", "timeout": 5}
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "mcp__.*__escalader$",
+        "hooks": [
+          {"type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/sos-attente.sh\" ouvert", "timeout": 5}
+        ]
+      },
+      {
+        "matcher": "mcp__.*__rapport$",
+        "hooks": [
+          {"type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/sos-attente.sh\" fait", "timeout": 5}
+        ]
+      },
+      {
+        "matcher": "mcp__.*__guide$",
+        "hooks": [
+          {"type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/memoire.sh\"", "timeout": 5}
+        ]
+      },
+      {
+        "matcher": "mcp__.*__lire_fiche$",
+        "hooks": [
+          {"type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/arrets.sh\"", "timeout": 5}
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {"type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/blocage.sh\"", "timeout": 5}
+        ]
+      },
+      {
+        "matcher": "AskUserQuestion",
+        "hooks": [
+          {"type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/consultation.sh\"", "timeout": 5}
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "mcp__.*__guide$",
+        "hooks": [
+          {"type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/memoire.sh\"", "timeout": 5}
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {"type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/blocage.sh\"", "timeout": 5}
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {"type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/sos-attente.sh\" stop", "timeout": 5},
+          {"type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/fin-de-tour.sh\"", "timeout": 5}
+        ]
+      }
+    ]
+  }
+}

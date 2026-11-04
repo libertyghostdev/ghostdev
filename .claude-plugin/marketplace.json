@@ -1,0 +1,23 @@
+{
+  "name": "ghostdev",
+  "description": "GhostDev : le développeur fantôme qui construit ton application, de l'idée jusqu'à sa publication.",
+  "owner": {
+    "name": "Anas, Liberty Tech",
+    "url": "https://libertyghostdev.fr"
+  },
+  "plugins": [
+    {
+      "name": "machine-a-app",
+      "displayName": "GhostDev",
+      "source": "./plugins/machine-a-app",
+      "description": "GhostDev construit ton application, de l'idée jusqu'à sa publication, sans que tu saches coder. Pour le lancer, écris « lance GhostDev » dans le dossier de ton projet.",
+      "author": {
+        "name": "Anas, Liberty Tech",
+        "url": "https://libertyghostdev.fr"
+      },
+      "homepage": "https://libertyghostdev.fr",
+      "category": "productivity",
+      "keywords": ["ghostdev", "application", "mobile", "web", "flutter"]
+    }
+  ]
+}

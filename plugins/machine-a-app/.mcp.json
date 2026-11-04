@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "ghostdev": {
+      "type": "http",
+      "url": "https://ghostdev.libertytechlab.com/mcp",
+      "headersHelper": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/entetes.sh\""
+    }
+  }
+}
