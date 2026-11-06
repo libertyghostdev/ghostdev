@@ -4,6 +4,8 @@
 // Agir : aller <adresse> | clic <sélecteur> | clics <sél1> <sél2> … | souris <x> <y> | remplir <sélecteur> <valeur>
 //        cocher <sélecteur> | choisir <sélecteur> <option> | touche <touche> | attendre <ms> | eval "<js>"
 //        telecharger <sélecteur> <fichier> : clique et range le fichier reçu là (une clé .p8 ne se télécharge qu'une fois)
+//        deposer <sélecteur> <fichier> : envoie un fichier par un champ fichier ou un bouton « Importer », sans la
+//        fenêtre de choix du Mac (un AAB, une vidéo, une capture d'écran)
 // Les sélecteurs sont ceux de Playwright : 'text="Continue"', 'role=button[name="Save"]', '[aria-label="…"]',
 // 'dialog[open] >> text=Annuler'. « clics » enchaîne dans la même connexion : un menu ne se referme pas entre deux.
 // La capture est à l'échelle de la page : ses pixels sont les coordonnées de « souris ».
@@ -14,8 +16,10 @@ import { fileURLToPath } from 'node:url';
 
 const [action, a, b] = process.argv.slice(2);
 const navigateur = await chromium.connectOverCDP(`http://127.0.0.1:${process.env.GHOSTDEV_NAVIGATEUR_PORT || '9333'}`);
-const pages = navigateur.contexts()[0].pages();
-const page = pages[pages.length - 1];
+// Les pages internes de Chrome (la bulle « Se connecter à Chrome » après une connexion Google) ne comptent pas.
+const toutes = navigateur.contexts()[0].pages();
+const pages = toutes.filter(p => !p.url().startsWith('chrome://'));
+const page = pages[pages.length - 1] || toutes[toutes.length - 1];
 page.setDefaultTimeout(15000);
 
 // Les champs et les boutons visibles, avec leur nom : de quoi choisir le sélecteur sans rien toucher.
@@ -75,6 +79,21 @@ switch (action) {
     fs.copyFileSync(path.join(recus, nom), b);
     fs.unlinkSync(path.join(recus, nom));
     console.log('téléchargé', nom, '→', b);
+    break;
+  }
+  case 'deposer': {
+    // La fenêtre de choix de fichier du Mac ne se pilote pas : un champ fichier reçoit le fichier directement, un
+    // bouton qui ouvre le choix le reçoit par l'événement « filechooser ». Le fichier passe par la connexion de
+    // pilotage : 46 Mo prennent plus de 15 s, d'où le délai long.
+    const cible = page.locator(a).first();
+    const fichier = path.resolve(b);
+    if (await cible.evaluate(e => e.tagName === 'INPUT' && e.type === 'file')) {
+      await cible.setInputFiles(fichier, { timeout: 300000 });
+    } else {
+      const [choix] = await Promise.all([page.waitForEvent('filechooser'), cible.click()]);
+      await choix.setFiles(fichier, { timeout: 300000 });
+    }
+    console.log('déposé', fichier);
     break;
   }
   case 'attendre': await page.waitForTimeout(Number(a) || 1000); break;

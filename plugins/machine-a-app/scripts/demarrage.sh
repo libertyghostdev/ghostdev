@@ -184,14 +184,19 @@ if [ -z "$GHOSTDEV_SANS_MAJ" ]; then
   distante=$(curl -fsS -m 5 -H "Authorization: Bearer $ck" -H "X-GhostDev-Plugin: ${version:-?}" "$url/plugin/version" 2>/dev/null | sed -n 's/.*"version": *"\([^"]*\)".*/\1/p')
   if [ -n "$distante" ] && [ -n "$version" ] && [ "$distante" != "$version" ]; then
     case "$root" in *"/plugins/synced/"*)
-      # Ajouté depuis claude.ai : Claude reprend seul la nouvelle version du dépôt public. Rien à taper, et surtout pas
-      # maj.sh, qui écrirait à côté d'un dossier que Claude tient (sa synchronisation refuse tout fichier en trop).
-      echo "Une version plus récente du plugin existe ($distante, ici $version). Elle arrive toute seule par Claude : rien à proposer ni à taper. Ce n'est pas bloquant : le contenu vient du serveur et il est déjà à jour."
+      # Ajouté depuis claude.ai : sans l'application GitHub de Claude sur le dépôt, que la personne ne peut pas poser,
+      # cette copie ne se met jamais à jour. Surtout pas maj.sh : Claude refuse tout fichier en trop dans ce dossier.
+      echo "Une version plus récente du plugin existe ($distante, ici $version). Cette installation ne se met pas à jour seule. Quand la personne a un moment, dis-lui en une phrase d'écrire à Anas sur WhatsApp : il la passe à l'installation qui se met à jour toute seule. Ce n'est pas bloquant : le contenu vient du serveur et il est déjà à jour."
       echo "</ghostdev-demarrage>"; exit 0;;
     esac
     case "$root" in *"/plugins/cache/"*|*"/plugins/marketplaces/"*)
-      # Installé par le marketplace officiel : c'est Claude Code qui met à jour, pas nous.
-      echo "Une version plus récente du plugin existe ($distante, ici $version). Quand la personne a un moment, propose-lui d'écrire dans Claude : /plugin update machine-a-app@ghostdev puis de relancer la session. Ce n'est pas bloquant : le contenu vient du serveur et il est déjà à jour."
+      # Installé par la place de marché : c'est Claude Code qui met à jour. L'installateur allume la mise à jour
+      # automatique ; elle tourne après le premier message et la version s'ouvre à la conversation suivante.
+      if tr -d ' \t\r\n' < "$cfgdir/settings.json" 2>/dev/null | grep -q '"autoUpdate":true'; then
+        echo "Une version plus récente du plugin existe ($distante, ici $version). Claude la télécharge tout seul pendant cette conversation et l'ouvre à la suivante : rien à proposer ni à taper. Ce n'est pas bloquant : le contenu vient du serveur et il est déjà à jour."
+      else
+        echo "Une version plus récente du plugin existe ($distante, ici $version). Quand la personne a un moment, propose-lui d'écrire dans Claude : /plugin update machine-a-app@ghostdev puis de relancer la session. Ce n'est pas bloquant : le contenu vient du serveur et il est déjà à jour."
+      fi
       echo "</ghostdev-demarrage>"; exit 0;;
     esac
     tmp=$(mktemp -d 2>/dev/null || { mkdir -p "/tmp/ghostdev.$$" && echo "/tmp/ghostdev.$$"; })

@@ -130,9 +130,18 @@ cp "$d/scripts/phase.sh" "$c/scripts/phase.sh"
 printf '{"version":"99.0.0"}' > "$racine/www/plugin/version"
 p="$racine/projet"; mkdir -p "$p/.machine-a-app"
 s=$(CLAUDE_PROJECT_DIR="$p" CLAUDE_PLUGIN_DATA= sh "$c/scripts/demarrage.sh" </dev/null 2>&1); sleep 1
-printf '%s' "$s" | grep -q "arrive toute seule" && ! printf '%s' "$s" | grep -q "/plugin update"; verifie $? "la nouvelle version arrive seule, aucune commande à taper"
+printf '%s' "$s" | grep -q "ne se met pas à jour seule" && ! printf '%s' "$s" | grep -q "/plugin update"; verifie $? "copie de claude.ai : elle ne se met pas à jour seule, on le dit, aucune commande"
 [ "$(telecharge)" = 0 ] && [ "$(version_de "$c")" = "$neuve" ] && [ "$(ls -A "$(dirname "$c")")" = machine-a-app ]; verifie $? "rien n'est téléchargé ni posé à côté du dossier de Claude"
 printf '%s' "$s" | grep -q "plugins/data/machine-a-app-synced"; verifie $? "ses données : plugins/data/machine-a-app-synced"
+# Par la place de marché, mises à jour automatiques allumées (l'installateur) : rien à taper.
+m="$racine/plugins/cache/ghostdev/machine-a-app/$neuve"; cp "$d/scripts/phase.sh" "$m/scripts/phase.sh"
+printf '{"extraKnownMarketplaces": {"ghostdev": {"source": {"source": "github", "repo": "libertyghostdev/ghostdev"}, "autoUpdate": true}}}' > "$racine/settings.json"
+s=$(CLAUDE_CONFIG_DIR="$racine" CLAUDE_PROJECT_DIR="$p" CLAUDE_PLUGIN_DATA= sh "$m/scripts/demarrage.sh" </dev/null 2>&1); sleep 1
+printf '%s' "$s" | grep -q "Claude la télécharge tout seul" && ! printf '%s' "$s" | grep -q "/plugin update"; verifie $? "place de marché, mise à jour automatique : rien à taper"
+printf '{}' > "$racine/settings.json"
+s=$(CLAUDE_CONFIG_DIR="$racine" CLAUDE_PROJECT_DIR="$p" CLAUDE_PLUGIN_DATA= sh "$m/scripts/demarrage.sh" </dev/null 2>&1); sleep 1
+printf '%s' "$s" | grep -q "/plugin update machine-a-app@ghostdev"; verifie $? "place de marché sans mise à jour automatique : /plugin update proposé"
+rm -f "$racine/settings.json"
 rm -f "$racine/www/plugin/version"
 
 echo
