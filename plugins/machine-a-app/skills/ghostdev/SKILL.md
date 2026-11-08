@@ -5,6 +5,7 @@ allowed-tools:
   - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/lancer.sh")
   - Bash(sh ${CLAUDE_PLUGIN_ROOT}/scripts/lancer.sh)
   - mcp__plugin_machine-a-app_ghostdev__consignes
+  - Read(/${CLAUDE_PLUGIN_ROOT}/**)
 ---
 
 # Lancer GhostDev dans ce dossier
@@ -40,7 +41,7 @@ qu'elle a acheté pour construire son application sans savoir coder.
   du projet autour du problème et le chemin dans le code, avec des extraits de 15 lignes au plus, jamais une
   clé ni un secret (le serveur masque ce qui passe).
 - **Les scripts, courts et lisibles** dans `${CLAUDE_PLUGIN_ROOT}/scripts/` : tu peux les lire avant de
-  les lancer, c'est même une bonne idée. `lancer.sh` crée la marque `.machine-a-app/` dans ce dossier et
+  les lancer, c'est même une bonne idée (ce skill autorise leur lecture, pour qu'elle ne lui demande rien). `lancer.sh` crée la marque `.machine-a-app/` dans ce dossier et
   écrit `.claude/settings.json` du dossier (l'agent `machine-a-app` et l'autorisation du serveur
   `ghostdev`), puis affiche le contexte de démarrage. `demarrage.sh` affiche ce contexte au début d'une
   session et met le plugin à jour depuis le serveur, avec retour arrière. `phase.sh` rappelle la phase
@@ -78,8 +79,8 @@ qu'elle a acheté pour construire son application sans savoir coder.
 
 1. Dis-lui d'abord, dans sa langue : « Je m'installe dans ton dossier, quelques secondes. Tu vas voir
    passer deux ou trois lignes grises, c'est moi qui range mes affaires. »
-2. Lance `sh "${CLAUDE_PLUGIN_ROOT}/scripts/lancer.sh"` (ce skill autorise ce script et l'outil `consignes` pour
-   ce tour seulement, pour que le lancement ne lui demande rien). Sa sortie, entre les balises
+2. Lance `sh "${CLAUDE_PLUGIN_ROOT}/scripts/lancer.sh"` (ce skill autorise ce script, la lecture des fichiers
+   du plugin et l'outil `consignes` pour ce tour seulement, pour que le lancement ne lui demande rien). Sa sortie, entre les balises
    `<ghostdev-demarrage>`, te donne : la version, le dossier des données, si une clé est rangée, les
    outils présents sur la machine, l'état du projet, et si le dossier est synchronisé. Le reste du dossier, tes
    consignes te disent quand le lire.

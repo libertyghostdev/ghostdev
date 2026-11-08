@@ -49,6 +49,12 @@ if [ -n "$outil" ] && [ "$outil" != "Bash" ]; then
     mcp__Claude_Browser__*|mcp__Claude_Code_iOS_Simulator__*) autoriser ;;
     WebFetch|WebSearch) autoriser ;;
     Read|Glob|Grep)
+      # Les fichiers de GhostDev lui-même : le lancement invite Claude à lire ses scripts avant de les lancer, donc
+      # avant le oui. Le 08/11, cette lecture a ouvert une fenêtre « lancer.sh » qui faisait peur. Permis dès le lancement.
+      racine=$(ghostdev_chemin "${CLAUDE_PLUGIN_ROOT:-}")
+      if [ -n "$racine" ] && [ "$racine" != "/" ]; then
+        case "$plat" in *"/.."*) ;; *"\"$racine/"*|*"\"$racine\""*) oui ;; esac
+      fi
       # Lire est permis partout (son code peut être ailleurs), sauf là où dorment ses clés et ses mots de passe.
       case "$plat" in *"/.ssh"*|*"/.aws"*|*"/.gnupg"*|*"/.config/"*|*"/Library/Keychains"*|*".netrc"*|*"/.docker/"*) exit 0 ;; esac
       autoriser ;;

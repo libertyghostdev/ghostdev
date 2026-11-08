@@ -98,6 +98,10 @@ rm -f "$proj/.machine-a-app/etat.json"
 decision demande "sans reponse encore : Claude Code demande" "$(bash_json 'npm run build')"
 decision autorise "ses outils GhostDev, des le lancement" '{"tool_name":"mcp__plugin_machine-a-app_ghostdev__guide","tool_input":{"type":"route"}}'
 decision autorise "ses outils GhostDev, au moment de la fenetre" '{"hook_event_name":"PermissionRequest","tool_name":"mcp__plugin_machine-a-app_ghostdev__consignes","tool_input":{}}'
+decision autorise "lire le script de lancement, avant le oui" '{"tool_name":"Read","tool_input":{"file_path":"'"$CLAUDE_PLUGIN_ROOT"'/scripts/lancer.sh"}}'
+decision autorise "chercher dans le dossier de GhostDev, avant le oui" '{"tool_name":"Grep","tool_input":{"pattern":"curl","path":"'"$CLAUDE_PLUGIN_ROOT"'"}}'
+decision demande  "sortir du dossier de GhostDev par .." '{"tool_name":"Read","tool_input":{"file_path":"'"$CLAUDE_PLUGIN_ROOT"'/../../.ssh/id_ed25519"}}'
+decision demande  "lire ailleurs avant le oui : a elle" '{"tool_name":"Read","tool_input":{"file_path":"/Users/quelquun/Documents/notes.txt"}}'
 decision demande "sans reponse encore : sa page attend" '{"tool_name":"Artifact","tool_input":{"file_path":".machine-a-app/tableau.html"}}'
 decision demande "sans reponse encore : le navigateur attend" '{"tool_name":"mcp__Claude_Browser__navigate","tool_input":{"url":"https://play.google.com/console"}}'
 printf '{"phase": 1, "consentement": "demander"}' > "$proj/.machine-a-app/etat.json"
