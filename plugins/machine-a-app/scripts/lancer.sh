@@ -17,6 +17,7 @@ reglages='{
   "permissions": {
     "allow": [
       "mcp__plugin_machine-a-app_ghostdev",
+      "Artifact", "ArtifactData", "ArtifactComments",
       "Bash(flutter:*)", "Bash(dart:*)", "Bash(pod:*)", "Bash(xcrun:*)", "Bash(adb:*)",
       "Bash(keytool:*)", "Bash(java:*)", "Bash(gradle:*)", "Bash(./gradlew:*)",
       "Bash(git:*)", "Bash(gh:*)",

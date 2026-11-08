@@ -43,6 +43,20 @@ if [ -f "$proj/.demo/scenario" ]; then
   echo "</ghostdev-demarrage>"
   exit 0
 fi
+# La page de suivi (tableau de bord) passe par trois outils. Un dossier marqué avant eux ne les a pas dans « allow » :
+# on ajoute ceux qui manquent, sans rien retirer, au seul fichier de réglages qui nomme l'agent. Rien s'ils y sont.
+for reg in "$proj/.claude/settings.json" "$proj/.claude/settings.local.json"; do
+  grep -q '"machine-a-app"' "$reg" 2>/dev/null || continue
+  grep -q '"allow"' "$reg" || continue
+  manque=""
+  for o in Artifact ArtifactData ArtifactComments; do grep -q "\"$o\"" "$reg" || manque="$manque\"$o\", "; done
+  [ -z "$manque" ] && break
+  awk -v m="$manque" '!fait && /"allow"[[:space:]]*:[[:space:]]*\[/ { sub(/"allow"[[:space:]]*:[[:space:]]*\[/, "&" m); fait=1 } { print }' "$reg" |
+    sed 's/"ArtifactComments", *\]/"ArtifactComments"]/; s/"ArtifactData", *\]/"ArtifactData"]/; s/"Artifact", *\]/"Artifact"]/' > "$reg.ghostdev" &&
+    [ -s "$reg.ghostdev" ] && mv "$reg.ghostdev" "$reg"
+  rm -f "$reg.ghostdev"
+  break
+done
 # V2 : l'arbre est-il servi ? Le socle (la voix et le protocole) arrive ici, au début de chaque conversation et après
 # chaque compactage (produit/docs/v2-arbre/cahier-des-charges.md, section 8). Sans socle, tout reste comme avant.
 CLAUDE_PLUGIN_DATA="${CLAUDE_PLUGIN_DATA:-$data}"
