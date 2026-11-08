@@ -73,9 +73,23 @@ if printf '%s' "$message" | grep -qi -E '(^|[^[:alpha:]])turbo([^[:alpha:]]|$)';
 fi
 # L'autonomie totale (FQ-17) : elle a choisi « Ignorer les permissions », deux gestes qu'elle seule peut faire dans
 # l'app. Chaque message apporte le mode de la conversation (permission_mode) : GhostDev voit s'ils sont faits.
-if grep -q '"autonomie"' "$f" 2>/dev/null; then
-  mode=$(ghostdev_champ "$(printf '%s' "$entree" | tr -d '\n\r')" permission_mode)
-  [ -n "$mode" ] && echo "GhostDev : mode d'autorisation de cette conversation : $mode (« Ignorer les permissions » s'écrit bypassPermissions)."
+# Le 2026-11-08, une session a lu « acceptEdits » après « c'est fait » et n'a rien dit : le rappel dit donc quoi faire.
+# Pas encore allumé : une seule fois par conversation, pour ne pas lui répéter le geste à chaque message.
+aut=$(sed -n 's/.*"autonomie" *: *"\([a-z]*\)".*/\1/p' "$f" 2>/dev/null | head -1)
+mode=$(ghostdev_champ "$(printf '%s' "$entree" | tr -d '\n\r')" permission_mode)
+if [ -n "$aut" ] && [ -n "$mode" ]; then
+  if [ "$mode" = "bypassPermissions" ]; then
+    [ "$aut" = "demandee" ] && echo "GhostDev : l'autonomie totale est allumée dans cette conversation (mode bypassPermissions). Écris \"autonomie\": \"allumee\" dans .machine-a-app/etat.json et dis-le-lui en une ligne (FQ-17, étape 2)."
+  elif [ -f "$sess/autonomie-dite" ]; then
+    echo "GhostDev : mode d'autorisation de cette conversation : $mode (« Ignorer les permissions » s'écrit bypassPermissions)."
+  else
+    case "$aut" in
+      demandee) touch "$sess/autonomie-dite"
+        echo "GhostDev : elle a demandé l'autonomie totale, et cette conversation est encore en mode $mode (« Ignorer les permissions » s'écrit bypassPermissions). En premier dans ta réponse, avant le reste : dis-lui le mode que tu vois, avec le geste qui manque (FQ-17, étape 2). Jamais un « c'est fait » cru sans ce mode." ;;
+      allumee) touch "$sess/autonomie-dite"
+        echo "GhostDev : l'autonomie totale était allumée, et cette conversation est en mode $mode : une ligne avec le geste 2, une seule fois (FQ-17, étape 3)." ;;
+    esac
+  fi
 fi
 # Le contenu du serveur a-t-il changé depuis le dernier message ? Si oui, la machine relit avant de répondre.
 vu="$proj/.machine-a-app/contenu.version"
