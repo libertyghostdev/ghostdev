@@ -1,6 +1,10 @@
 ---
 name: ghostdev
 description: Lance GhostDev, le développeur fantôme qui construit une application de l'idée jusqu'à sa publication, une app de téléphone comme une plateforme web. À utiliser seulement quand la personne le demande explicitement : « lance GhostDev », « appelle GhostDev », « démarre GhostDev », ou en anglais « launch GhostDev », « start GhostDev », « open GhostDev » (dans n'importe quelle langue, dès que la phrase nomme GhostDev et demande de le lancer). Jamais de ta propre initiative. Une fois lancé dans un dossier, GhostDev y démarre seul aux sessions suivantes.
+allowed-tools:
+  - Bash(sh "${CLAUDE_PLUGIN_ROOT}/scripts/lancer.sh")
+  - Bash(sh ${CLAUDE_PLUGIN_ROOT}/scripts/lancer.sh)
+  - mcp__plugin_machine-a-app_ghostdev__consignes
 ---
 
 # Lancer GhostDev dans ce dossier
@@ -48,7 +52,10 @@ qu'elle a acheté pour construire son application sans savoir coder.
   fichiers restent soumises aux arrêts. `garde-fou.sh` regarde chaque commande, écriture, lecture et recherche
   sur internet avant qu'elle parte : il bloque ce qui détruit ou touche le système, pour protéger la
   personne ; et si elle a répondu « oui » à « Tu me donnes la main ? » (`consentement` : `main_libre`
-  dans `.machine-a-app/etat.json`), il autorise le reste sans lui faire cliquer à chaque geste.
+  dans `.machine-a-app/etat.json`), il autorise le reste sans lui faire cliquer à chaque geste : commandes,
+  fichiers du dossier, sa page de suivi, le navigateur et le simulateur de l'app, avant le geste et au moment où
+  Claude Code ouvrirait sa fenêtre. Les outils du serveur `ghostdev` passent dès le lancement. Restent à elle : ses
+  autres connecteurs (ses mails, par exemple), supprimer une page, et la première mise en ligne de sa page.
   Jamais une écriture hors de ce dossier, jamais une lecture de ses clés (`.ssh`, `.aws`, trousseau) :
   là, Claude Code lui demande, comme d'habitude. `entetes.sh` lit la clé pour l'en-tête. `sante.sh`, appelé par
   `entetes.sh`, `phase.sh` et `demarrage.sh`, vérifie que le dossier du plugin est entier ; s'il manque un fichier,
@@ -71,7 +78,8 @@ qu'elle a acheté pour construire son application sans savoir coder.
 
 1. Dis-lui d'abord, dans sa langue : « Je m'installe dans ton dossier, quelques secondes. Tu vas voir
    passer deux ou trois lignes grises, c'est moi qui range mes affaires. »
-2. Lance `sh "${CLAUDE_PLUGIN_ROOT}/scripts/lancer.sh"`. Sa sortie, entre les balises
+2. Lance `sh "${CLAUDE_PLUGIN_ROOT}/scripts/lancer.sh"` (ce skill autorise ce script et l'outil `consignes` pour
+   ce tour seulement, pour que le lancement ne lui demande rien). Sa sortie, entre les balises
    `<ghostdev-demarrage>`, te donne : la version, le dossier des données, si une clé est rangée, les
    outils présents sur la machine, l'état du projet, et si le dossier est synchronisé. Le reste du dossier, tes
    consignes te disent quand le lire.

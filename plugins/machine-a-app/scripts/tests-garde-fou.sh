@@ -88,7 +88,7 @@ decision() {
   sortie=$(printf '%s' "$json" | sh "$ici/garde-fou.sh" 2>/dev/null); rc=$?
   obtenu=demande
   [ "$rc" = 2 ] && obtenu=bloque
-  [ "$rc" = 0 ] && printf '%s' "$sortie" | grep -q '"permissionDecision":"allow"' && obtenu=autorise
+  [ "$rc" = 0 ] && printf '%s' "$sortie" | grep -q -E '"permissionDecision":"allow"|"behavior":"allow"' && obtenu=autorise
   if [ "$obtenu" = "$attendu" ]; then ok=$((ok+1)); printf "  ok      %-8s %s\n" "$obtenu" "$libelle"
   else ko=$((ko+1)); printf "  ECHEC   attendu %s, obtenu %s : %s\n" "$attendu" "$obtenu" "$libelle"; fi
 }
@@ -96,6 +96,10 @@ bash_json() { printf '{"tool_name":"Bash","tool_input":{"command":"%s"}}' "$1"; 
 
 rm -f "$proj/.machine-a-app/etat.json"
 decision demande "sans reponse encore : Claude Code demande" "$(bash_json 'npm run build')"
+decision autorise "ses outils GhostDev, des le lancement" '{"tool_name":"mcp__plugin_machine-a-app_ghostdev__guide","tool_input":{"type":"route"}}'
+decision autorise "ses outils GhostDev, au moment de la fenetre" '{"hook_event_name":"PermissionRequest","tool_name":"mcp__plugin_machine-a-app_ghostdev__consignes","tool_input":{}}'
+decision demande "sans reponse encore : sa page attend" '{"tool_name":"Artifact","tool_input":{"file_path":".machine-a-app/tableau.html"}}'
+decision demande "sans reponse encore : le navigateur attend" '{"tool_name":"mcp__Claude_Browser__navigate","tool_input":{"url":"https://play.google.com/console"}}'
 printf '{"phase": 1, "consentement": "demander"}' > "$proj/.machine-a-app/etat.json"
 decision demande "elle a dit non : Claude Code demande" "$(bash_json 'npm run build')"
 decision demande "elle a dit non : une ecriture aussi" '{"tool_name":"Edit","tool_input":{"file_path":"'"$proj"'/lib/main.dart"}}'
@@ -117,6 +121,15 @@ decision demande  "lire ses cles SSH" '{"tool_name":"Read","tool_input":{"file_p
 decision demande  "fouiller ses cles AWS" '{"tool_name":"Glob","tool_input":{"pattern":"**/*","path":"/Users/quelquun/.aws"}}'
 decision autorise "chercher sur internet" '{"tool_name":"WebFetch","tool_input":{"url":"https://nextjs.org/docs","prompt":"x"}}'
 decision demande  "un outil inconnu : on ne decide pas" '{"tool_name":"OutilInconnu","tool_input":{}}'
+decision autorise "republier sa page" '{"tool_name":"Artifact","tool_input":{"file_path":".machine-a-app/tableau.html","url":"https://claude.ai/artifact/x"}}'
+decision autorise "recopier son etat dans sa page" '{"tool_name":"ArtifactData","tool_input":{"action":"set","collection":"projet","doc_id":"etat"}}'
+decision demande  "la premiere mise en ligne avec memoire et telechargements : Claude Code la fait confirmer" '{"tool_name":"Artifact","tool_input":{"file_path":".machine-a-app/tableau.html","capabilities":{"db":{},"downloads":true}}}'
+decision demande  "supprimer une ligne de sa page : a elle" '{"tool_name":"ArtifactData","tool_input":{"action":"delete","collection":"choix","doc_id":"a"}}'
+decision autorise "le navigateur de l app" '{"tool_name":"mcp__Claude_Browser__navigate","tool_input":{"url":"https://play.google.com/console"}}'
+decision autorise "le simulateur" '{"tool_name":"mcp__Claude_Code_iOS_Simulator__control","tool_input":{"action":"screenshot"}}'
+decision autorise "la fenetre de Claude Code, une commande verifiee" '{"hook_event_name":"PermissionRequest","tool_name":"Bash","tool_input":{"command":"npm run build"}}'
+decision bloque   "la fenetre de Claude Code, le danger reste bloque" '{"hook_event_name":"PermissionRequest","tool_name":"Bash","tool_input":{"command":"sudo rm -rf /etc"}}'
+decision demande  "un autre connecteur (ses mails) : a elle" '{"tool_name":"mcp__gmail__send_message","tool_input":{"to":"x"}}'
 rm -f "$proj/.machine-a-app/etat.json"
 
 echo

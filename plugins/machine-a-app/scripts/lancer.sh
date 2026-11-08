@@ -16,7 +16,7 @@ reglages='{
   "agent": "machine-a-app",
   "permissions": {
     "allow": [
-      "mcp__plugin_machine-a-app_ghostdev",
+      "mcp__plugin_machine-a-app_ghostdev", "mcp__plugin_machine-a-app_ghostdev__*",
       "Artifact", "ArtifactData", "ArtifactComments",
       "Bash(flutter:*)", "Bash(dart:*)", "Bash(pod:*)", "Bash(xcrun:*)", "Bash(adb:*)",
       "Bash(keytool:*)", "Bash(java:*)", "Bash(gradle:*)", "Bash(./gradlew:*)",

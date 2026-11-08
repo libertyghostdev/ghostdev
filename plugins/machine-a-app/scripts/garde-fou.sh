@@ -16,17 +16,37 @@ entree=$(cat)
 # Maintenant, ce que ce garde-fou a vérifié passe sans question. Les règles « deny » des réglages et les chemins
 # protégés de Claude Code (.git, .claude) restent au-dessus : la doc dit qu'un hook ne peut pas les lever.
 # Réponse « Non, demande-moi » : rien n'est autorisé ici, Claude Code demande comme d'habitude.
-autoriser() {
-  grep -q '"consentement" *: *"main_libre"' "$proj/.machine-a-app/etat.json" 2>/dev/null || exit 0
-  printf '%s\n' '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow","permissionDecisionReason":"GhostDev : la personne a donné la main, et le garde-fou a vérifié ce geste."}}'
+# Le même oui sert à deux moments : avant le geste (PreToolUse), et en filet quand Claude Code s'apprête quand même
+# à ouvrir sa fenêtre (PermissionRequest). L'essai du 08/11, en mode « Accepter les modifications », a vu des fenêtres
+# pour des outils que la liste « allow » couvrait déjà.
+oui() {
+  if [ "$evenement" = "PermissionRequest" ]; then
+    printf '%s\n' '{"hookSpecificOutput":{"hookEventName":"PermissionRequest","decision":{"behavior":"allow"}}}'
+  else
+    printf '%s\n' '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow","permissionDecisionReason":"GhostDev : la personne a donné la main, et le garde-fou a vérifié ce geste."}}'
+  fi
   exit 0
 }
+autoriser() {
+  grep -q '"consentement" *: *"main_libre"' "$proj/.machine-a-app/etat.json" 2>/dev/null || exit 0
+  oui
+}
 
-# Les outils autres que Bash : lire, écrire, chercher sur internet. Bash passe par tous les contrôles plus bas.
+# Les outils autres que Bash : lire, écrire, chercher sur internet, sa page, le navigateur et le simulateur de
+# l'app. Bash passe par tous les contrôles plus bas.
 plat=$(printf '%s' "$entree" | tr -d '\n\r')
 outil=$(printf '%s' "$plat" | sed -n -E 's/^.*"tool_name" *: *"([^"]*)".*$/\1/p')
+evenement=$(printf '%s' "$plat" | sed -n -E 's/^.*"hook_event_name" *: *"([^"]*)".*$/\1/p')
 if [ -n "$outil" ] && [ "$outil" != "Bash" ]; then
   case "$outil" in
+    # Ses propres outils : la méthode, lue ou consultée. Ils ne changent rien chez elle : permis dès le lancement.
+    mcp__plugin_*ghostdev__*) oui ;;
+    # Sa page de suivi. Restent à elle : supprimer une page ou une ligne, et la mise en ligne qui donne à la page sa
+    # mémoire et ses téléchargements (« capabilities »), que Claude Code fait toujours confirmer, une fois.
+    Artifact|ArtifactData|ArtifactComments)
+      printf '%s' "$plat" | grep -q -E '"action" *: *"delete"|"capabilities" *:' && exit 0
+      autoriser ;;
+    mcp__Claude_Browser__*|mcp__Claude_Code_iOS_Simulator__*) autoriser ;;
     WebFetch|WebSearch) autoriser ;;
     Read|Glob|Grep)
       # Lire est permis partout (son code peut être ailleurs), sauf là où dorment ses clés et ses mots de passe.
