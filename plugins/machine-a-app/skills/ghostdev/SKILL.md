@@ -44,7 +44,7 @@ qu'elle a acheté pour construire son application sans savoir coder.
   écrit `.claude/settings.json` du dossier (l'agent `machine-a-app` et l'autorisation du serveur
   `ghostdev`), puis affiche le contexte de démarrage. `demarrage.sh` affiche ce contexte au début d'une
   session et met le plugin à jour depuis le serveur, avec retour arrière. `phase.sh` rappelle la phase
-  en cours à chaque message, et sur le mot « SOS » envoie ce message et ses trois messages d'avant au serveur (`/sos`) ;
+  en cours à chaque message (et, si elle a choisi l'autonomie totale, le mode d'autorisation de la conversation), et sur le mot « SOS » envoie ce message et ses trois messages d'avant au serveur (`/sos`) ;
   le serveur ouvre alors le ticket et prévient Anas. `phase.sh` te demande ensuite de faire le diagnostic de lab
   en lecture seule (`methode_diagnostic`) et de l'envoyer par `rapport` ; `sos-attente.sh` te rappelle d'envoyer
   ce rapport avant de finir ton tour (deux fois au plus). Tant qu'un SOS attend son rapport, `consultation.sh`

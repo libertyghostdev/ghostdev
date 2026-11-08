@@ -1,6 +1,6 @@
 {
   "name": "machine-a-app",
   "description": "GhostDev : le développeur fantôme qui emmène une personne qui ne sait pas coder de l'idée jusqu'à l'application publiée. Il pose les questions, fait le travail, et ne laisse jamais la personne bloquée.",
-  "version": "0.11.12",
+  "version": "0.11.13",
   "author": { "name": "Anas, Liberty Tech" }
 }

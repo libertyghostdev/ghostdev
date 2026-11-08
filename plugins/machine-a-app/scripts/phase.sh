@@ -71,6 +71,12 @@ fi
 if printf '%s' "$message" | grep -qi -E '(^|[^[:alpha:]])turbo([^[:alpha:]]|$)'; then
   echo "Mot-clé turbo reçu : confie la prochaine tâche au dessinateur."
 fi
+# L'autonomie totale (FQ-17) : elle a choisi « Ignorer les permissions », deux gestes qu'elle seule peut faire dans
+# l'app. Chaque message apporte le mode de la conversation (permission_mode) : GhostDev voit s'ils sont faits.
+if grep -q '"autonomie"' "$f" 2>/dev/null; then
+  mode=$(ghostdev_champ "$(printf '%s' "$entree" | tr -d '\n\r')" permission_mode)
+  [ -n "$mode" ] && echo "GhostDev : mode d'autorisation de cette conversation : $mode (« Ignorer les permissions » s'écrit bypassPermissions)."
+fi
 # Le contenu du serveur a-t-il changé depuis le dernier message ? Si oui, la machine relit avant de répondre.
 vu="$proj/.machine-a-app/contenu.version"
 # Le même appel porte la clé : s'il y a une demande de diagnostic de lab d'Anas, le serveur la joint, une seule fois.
