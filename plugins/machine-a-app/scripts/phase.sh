@@ -67,6 +67,14 @@ if [ -n "$v2" ]; then
 else
 [ -n "$n" ] && echo "Rappel GhostDev : phase $n en cours. Une seule étape à la fois. Ce qu'elle vient de dire aimer, refuser ou décider va dans decisions.md avant ta réponse, et tu le dis en une ligne. Si elle a écrit « turbo », la tâche suivante va au sous-agent dessinateur."
 fi
+# Le tableau (FQ-16) : un projet app sans tableau.json fait d'abord le bilan (EA-007). La règle vit dans le socle, en
+# une ligne, et le modèle la sautait : le 2026-11-09, Habib a passé une après-midi avec GhostDev sans jamais voir sa
+# page. Le rappel vient donc d'ici, une fois par conversation, tant que le tableau n'existe pas.
+rt=$(sed -n 's/.*"route" *: *"\([a-z]*\)".*/\1/p' "$f" 2>/dev/null | head -1)
+if [ -n "$v2" ] && [ "$rt" != "web" ] && [ ! -f "$proj/.machine-a-app/tableau.json" ] && [ ! -f "$sess/tableau-dit" ]; then
+  touch "$sess/tableau-dit"
+  echo "GhostDev : ce dossier n'a pas encore son tableau (.machine-a-app/tableau.json manque). Avant sa demande, en premier dans ta réponse : propose-lui en une phrase de faire le point sur son projet pour ouvrir son tableau, puis lire_fiche(\"EA-007\") et fais le bilan ; si rien n'existe encore dans le dossier, lire_fiche(\"EA-002\"). Si ce message est une tâche programmée qui tourne sans elle, ne fais pas le bilan maintenant."
+fi
 # « turbo » : cerveau fort.
 if printf '%s' "$message" | grep -qi -E '(^|[^[:alpha:]])turbo([^[:alpha:]]|$)'; then
   echo "Mot-clé turbo reçu : confie la prochaine tâche au dessinateur."
