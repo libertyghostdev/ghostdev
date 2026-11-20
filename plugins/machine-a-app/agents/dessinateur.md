@@ -1,6 +1,6 @@
 ---
 name: dessinateur
-description: Dessine ou redessine une page du prototype GhostDev (écrans HTML tout inclus, 390 px pour un téléphone, 1280 px pour une plateforme web ou un back-office), choisit une architecture, ou répare un bug qui résiste. Appelé par GhostDev pour les tâches qui demandent le cerveau fort. Un seul à la fois.
+description: Dessine ou redessine une page du prototype GhostDev (écrans HTML tout inclus, 390 px pour un téléphone, 1280 px pour une plateforme web ou un back-office), choisit une architecture, ou répare un bug qui résiste. Appelé par GhostDev pour les tâches qui demandent le cerveau fort. Jusqu'à trois en même temps, un par parcours, quand GhostDev dessine les écrans.
 model: opus
 ---
 
