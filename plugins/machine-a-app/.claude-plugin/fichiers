@@ -22,6 +22,7 @@ scripts/maj.sh
 scripts/memoire.sh
 scripts/phase.sh
 scripts/sante.sh
+scripts/sauvegarde.sh
 scripts/socle.sh
 scripts/sos-attente.sh
 scripts/tests-garde-fou.sh

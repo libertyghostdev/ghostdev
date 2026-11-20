@@ -94,7 +94,27 @@ if [ -s "$data/licence" ]; then
   case "$entete" in *Bearer*) et="en-tête prêt";; *) et="en-tête vide";; esac
   echo "Clé de licence : rangée ($cle), $et. Si un outil répond « il te faut une licence », passe cette clé dans son paramètre cle. Ne la redemande jamais à la personne."
 else
-  echo "Clé de licence : absente"
+  # Un autre ordinateur, le même compte Claude : la licence se retrouve par lui, sans clé à recoller.
+  ent0=$(sh "$(dirname "$0")/entetes.sh" 2>/dev/null)
+  cc=$(printf '%s' "$ent0" | sed -n 's/.*"Bearer \(compte_[0-9a-f]*\)".*/\1/p')
+  rep=""; [ -n "$cc" ] && rep=$(curl -fsS -m 4 -H "Authorization: Bearer $cc" "$url/licence/compte" 2>/dev/null)
+  case "$rep" in
+    *'"ok":true'*|*'"ok": true'*)
+      pr=$(printf '%s' "$rep" | sed -n 's/.*"prenom": *"\([^"]*\)".*/\1/p')
+      echo "Clé de licence : retrouvée par son compte Claude (licence de ${pr:-la personne}), sans clé sur cet ordinateur. Les outils marchent sans paramètre cle. Ne lui demande jamais sa clé ; si elle la colle quand même, range-la." ;;
+    *) echo "Clé de licence : absente" ;;
+  esac
+fi
+# La sauvegarde par défaut (FQ-15) : un ordinateur perdu ne doit rien coûter. sauvegarde.sh envoie seul à chaque fin de tour.
+if [ -d "$proj/.machine-a-app" ] && [ ! -f "$proj/.demo/scenario" ]; then
+  if ! git -C "$proj" remote get-url origin >/dev/null 2>&1; then
+    echo "Sauvegarde : ce projet n'est pas encore sur son GitHub privé. Juste après la route (fin de la phase 0), ou dans ce tour si elle est passée, lire_fiche(\"FQ-15\") et fais « Par défaut » : sans ça, un ordinateur perdu emporte tout."
+  else
+    gdir=$(git -C "$proj" rev-parse --absolute-git-dir 2>/dev/null)
+    [ -n "$gdir" ] && [ -s "$gdir/ghostdev-envoi-refuse" ] && echo "Sauvegarde : le dernier envoi sur GitHub a échoué ($(cat "$gdir/ghostdev-envoi-refuse")). Lance git push toi-même, règle la cause (FQ-15), sans en parler à la personne sauf si son geste est nécessaire."
+    [ -d "$proj/.machine-a-app/coffre" ] && [ ! -s "$proj/.machine-a-app/coffre/.phrase" ] && echo "Sauvegarde : le coffre n'a pas encore sa phrase de chiffrement, il ne voyage pas. lire_fiche(\"FQ-15\"), étape du coffre."
+    [ -f "$proj/.machine-a-app/coffre.chiffre" ] && [ ! -d "$proj/.machine-a-app/coffre" ] && echo "Sauvegarde : un coffre chiffré attend sur cet ordinateur, sans coffre ouvert. lire_fiche(\"FQ-15\"), « Sur un nouvel ordinateur » : demande-lui sa phrase et ouvre-le."
+  fi
 fi
 # Ce qui est déjà installé : la machine s'en sert au lieu de le réinstaller ou de l'imposer.
 presents=""; absents=""

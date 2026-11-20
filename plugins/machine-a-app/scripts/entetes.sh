@@ -20,4 +20,19 @@ elif [ -z "$GHOSTDEV_EN_REPARATION" ]; then
   (t=$(mktemp -d) && curl -fsS -m 30 "${GHOSTDEV_URL:-https://ghostdev.libertytechlab.com}/plugin/archive.tgz" -o "$t/p.tgz" \
     && tar -xzf "$t/p.tgz" -C "$t" && cp "$t/scripts/sante.sh" "$sante.tmp" && mv -f "$sante.tmp" "$sante"; rm -rf "$t") </dev/null >/dev/null 2>&1 &
 fi
-if [ -n "$k" ]; then printf '{"Authorization":"Bearer %s","X-GhostDev-Plugin":"%s"}' "$k" "$v"; else printf '{"X-GhostDev-Plugin":"%s"}' "$v"; fi
+# Le compte Claude, par son empreinte seule (sha256, jamais l'identifiant ni l'e-mail) : le serveur le lie à la
+# licence quand la clé passe avec lui. Sur un autre ordinateur, sans clé rangée, il la remplace : rien à recoller.
+u="$CLAUDE_CODE_ACCOUNT_UUID"
+if [ -z "$u" ]; then
+  for j in "${CLAUDE_CONFIG_DIR:+$cfg/.claude.json}" "$HOME/.claude.json"; do
+    [ -n "$j" ] && [ -s "$j" ] && u=$(sed -n 's/.*"accountUuid": *"\([0-9a-fA-F-]*\)".*/\1/p' "$j" 2>/dev/null | head -1) && [ -n "$u" ] && break
+  done
+fi
+c=""
+if [ -n "$u" ]; then
+  c=$(printf 'ghostdev:%s' "$u" | { shasum -a 256 2>/dev/null || sha256sum 2>/dev/null || openssl dgst -sha256 -r 2>/dev/null; } | cut -c1-64)
+  case "$c" in *[!0-9a-f]*|"") c="";; esac
+fi
+if [ -n "$k" ]; then printf '{"Authorization":"Bearer %s","X-GhostDev-Plugin":"%s"%s}' "$k" "$v" "${c:+,\"X-GhostDev-Compte\":\"$c\"}"
+elif [ -n "$c" ]; then printf '{"Authorization":"Bearer compte_%s","X-GhostDev-Plugin":"%s"}' "$c" "$v"
+else printf '{"X-GhostDev-Plugin":"%s"}' "$v"; fi

@@ -101,7 +101,8 @@
       {
         "hooks": [
           {"type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/sos-attente.sh\" stop", "timeout": 5},
-          {"type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/fin-de-tour.sh\"", "timeout": 5}
+          {"type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/fin-de-tour.sh\"", "timeout": 5},
+          {"type": "command", "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/sauvegarde.sh\"", "timeout": 5}
         ]
       }
     ]
